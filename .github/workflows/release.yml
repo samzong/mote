@@ -21,20 +21,25 @@ jobs:
       - name: Build DMG
         run: make dmg
 
+      - name: Verify DMG
+        run: hdiutil verify .build/Mote-arm64.dmg
+
+      - name: Generate release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/releases/generate-notes \
+            -f tag_name="v${{ steps.v.outputs.version }}" > generated_notes.json
+          jq -r '.body' generated_notes.json > release_notes.md
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: v${{ steps.v.outputs.version }}
+          body_path: release_notes.md
           files: .build/*-arm64.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update Homebrew Tap
-        uses: samzong/homebrew-tap/actions/brew-releaser@main
-        with:
-          type: cask
-          version: ${{ steps.v.outputs.version }}
-          app_name: Mote
-          dmg_url: "https://github.com/${{ github.repository }}/releases/download/v${{ steps.v.outputs.version }}/Mote-arm64.dmg"
-          desc: "macOS background app that rewrites selected text system-wide"
-          min_macos: ":sequoia"
-          token: ${{ secrets.GH_PAT }}
