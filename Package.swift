@@ -31,5 +31,10 @@ let package = Package(
             dependencies: ["MoteCore"],
             path: "Tests/MoteCoreTests"
         ),
+        .testTarget(
+            name: "MoteTests",
+            dependencies: ["Mote", "MoteCore"],
+            path: "Tests/MoteTests"
+        ),
     ]
 )

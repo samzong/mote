@@ -10,6 +10,7 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
 
     var onRefreshStatus: (@MainActor () -> Status)?
     var onRequestAccessibility: (@MainActor () -> Void)?
+    var onOpenModelSettings: (@MainActor () -> Void)?
 
     private enum DisplayState {
         case ready
@@ -33,6 +34,7 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
     private let menu = NSMenu()
     private let statusMenuItem = NSMenuItem()
     private let requestAccessibilityItem = NSMenuItem()
+    private let modelSettingsItem = NSMenuItem()
     private let openConfigItem = NSMenuItem()
     private let quitItem = NSMenuItem()
     private var latestStatus = Status(accessibilityTrusted: false, hotkeyAvailable: false)
@@ -87,6 +89,11 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
         requestAccessibilityItem.action = #selector(requestAccessibility)
         menu.addItem(requestAccessibilityItem)
 
+        modelSettingsItem.title = "Model Settings..."
+        modelSettingsItem.target = self
+        modelSettingsItem.action = #selector(openModelSettings)
+        menu.addItem(modelSettingsItem)
+
         openConfigItem.title = "Open Config Folder"
         openConfigItem.target = self
         openConfigItem.action = #selector(openConfigFolder)
@@ -120,6 +127,11 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             self.refresh()
         }
+    }
+
+    @objc private func openModelSettings() {
+        Logger.debug("statusMenu.openModelSettings")
+        onOpenModelSettings?()
     }
 
     @objc private func openConfigFolder() {
