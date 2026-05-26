@@ -16,15 +16,21 @@ public enum ConfigLoader {
         return try JSONDecoder().decode(AppConfig.self, from: data)
     }
 
+    public static func saveConfig(_ config: AppConfig) throws {
+        try FileManager.default.createDirectory(at: configDirectory(), withIntermediateDirectories: true)
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        let data = try encoder.encode(config)
+        try data.write(to: configURL(), options: .atomic)
+    }
+
     public static func saveDefaultFilesIfNeeded() throws {
         let fileManager = FileManager.default
         try fileManager.createDirectory(at: configDirectory(), withIntermediateDirectories: true)
 
         if !fileManager.fileExists(atPath: configURL().path) {
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-            let data = try encoder.encode(AppConfig.default)
-            try data.write(to: configURL(), options: .atomic)
+            try saveConfig(.default)
         }
 
         try saveDefaultCommandsIfNeeded()

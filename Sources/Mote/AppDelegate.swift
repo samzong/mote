@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var composerPanel: ComposerPanel?
     private var selectionWatcher: SelectionWatcher?
     private var statusMenu: StatusMenuController?
+    private var modelSettingsWindowController: ModelSettingsWindowController?
     private var hotkeyAvailable = false
     private let clipboardReader = ClipboardSelectionReader()
 
@@ -115,8 +116,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             AccessibilityPermission.requestAccess()
             self?.refreshStatusMenu()
         }
+        menu.onOpenModelSettings = { [weak self] in
+            self?.showModelSettings()
+        }
         statusMenu = menu
         refreshStatusMenu()
+    }
+
+    private func showModelSettings() {
+        Logger.debug("showModelSettings()")
+        if modelSettingsWindowController == nil {
+            modelSettingsWindowController = ModelSettingsWindowController()
+        }
+
+        modelSettingsWindowController?.show()
     }
 
     private func currentStatus() -> StatusMenuController.Status {

@@ -15,12 +15,22 @@ make run
 make test
 ```
 
+## Install
+
+```bash
+brew install samzong/tap/mote
+```
+
 ## Config
 
 Mote reads configuration from:
 
 - `~/.config/mote/config.json`
 - `~/.config/mote/commands/*.md`
+
+Use the menu bar icon and choose `Model Settings...` to configure OpenRouter, Ollama, LM Studio, or a custom OpenAI-compatible endpoint.
+
+The settings window discovers models from `/v1/models` and can auto-select a free OpenRouter model.
 
 Commands are user-authored Markdown files under `commands/`. Each file defines a rewrite instruction that can be invoked via `/filename` in the composer input.
 

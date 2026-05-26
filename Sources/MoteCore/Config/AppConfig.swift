@@ -1,6 +1,7 @@
 import Foundation
 
 public struct AppConfig: Codable, Equatable, Sendable {
+    public var provider: String
     public var baseURL: String
     public var apiKey: String
     public var model: String
@@ -8,6 +9,7 @@ public struct AppConfig: Codable, Equatable, Sendable {
     public var maxTokens: Int
 
     enum CodingKeys: String, CodingKey {
+        case provider
         case baseURL = "base_url"
         case apiKey = "api_key"
         case model
@@ -20,8 +22,10 @@ public struct AppConfig: Codable, Equatable, Sendable {
         apiKey: String,
         model: String,
         temperature: Double,
-        maxTokens: Int
+        maxTokens: Int,
+        provider: String = ""
     ) {
+        self.provider = provider
         self.baseURL = baseURL
         self.apiKey = apiKey
         self.model = model
@@ -31,6 +35,7 @@ public struct AppConfig: Codable, Equatable, Sendable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.provider = try container.decodeIfPresent(String.self, forKey: .provider) ?? ""
         self.baseURL = try container.decodeIfPresent(String.self, forKey: .baseURL) ?? ""
         self.apiKey = try container.decodeIfPresent(String.self, forKey: .apiKey) ?? ""
         self.model = try container.decodeIfPresent(String.self, forKey: .model) ?? ""
@@ -43,6 +48,7 @@ public struct AppConfig: Codable, Equatable, Sendable {
         apiKey: "",
         model: "",
         temperature: 0.2,
-        maxTokens: 1024
+        maxTokens: 1024,
+        provider: ""
     )
 }
