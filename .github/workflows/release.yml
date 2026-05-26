@@ -36,10 +36,11 @@ jobs:
           jq -r '.body' generated_notes.json > release_notes.md
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          name: v${{ steps.v.outputs.version }}
-          body_path: release_notes.md
-          files: .build/*-arm64.dmg
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.v.outputs.version }}" \
+            .build/Mote-arm64.dmg \
+            --title "v${{ steps.v.outputs.version }}" \
+            --notes-file release_notes.md \
+            --latest
