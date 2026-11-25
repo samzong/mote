@@ -9,10 +9,11 @@ BUILD_DIR  := .build
 APP_BUNDLE := /Applications/$(APP_NAME).app
 APP_ICON   := Resources/AppIcon.icns
 ARCH       ?= arm64
+VERSION    ?= $(shell /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)
 
 DMG_DIR     := $(BUILD_DIR)/dmg
 DMG_STAGING := $(DMG_DIR)/staging
-DMG_PATH    := $(BUILD_DIR)/$(APP_NAME)-$(ARCH).dmg
+DMG_PATH    := $(BUILD_DIR)/$(APP_NAME)-$(VERSION)-$(ARCH).dmg
 
 CODE_SIGN_IDENTITY    ?= -
 CODE_SIGN_REQUIREMENT := =designated => identifier "$(BUNDLE_ID)"
