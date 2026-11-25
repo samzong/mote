@@ -14,15 +14,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Extract version
+      - name: Verify SemVer tag and tracked Info.plist
         id: v
-        run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(alpha|beta|rc)\.(0|[1-9][0-9]*))?$ ]]; then
+            echo "::error::Invalid SemVer release tag: $RELEASE_TAG"
+            exit 1
+          fi
+          version="${RELEASE_TAG#v}"
+          core="${version%%-*}"
+          plist_short="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)"
+          if [[ "$plist_short" != "$core" ]]; then
+            echo "::error::Info.plist version $plist_short does not match release core $core"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Build DMG
-        run: make dmg
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: make dmg VERSION="$VERSION"
 
       - name: Verify DMG
-        run: hdiutil verify .build/Mote-arm64.dmg
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: hdiutil verify ".build/Mote-${VERSION}-arm64.dmg"
 
       - name: Generate release notes
         env:
@@ -38,9 +57,15 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.v.outputs.version }}
         run: |
-          gh release create "v${{ steps.v.outputs.version }}" \
-            .build/Mote-arm64.dmg \
-            --title "v${{ steps.v.outputs.version }}" \
+          set -euo pipefail
+          args=(--latest)
+          if [[ "$VERSION" == *-* ]]; then
+            args=(--prerelease)
+          fi
+          gh release create "v${VERSION}" \
+            ".build/Mote-${VERSION}-arm64.dmg" \
+            --title "v${VERSION}" \
             --notes-file release_notes.md \
-            --latest
+            "${args[@]}"
